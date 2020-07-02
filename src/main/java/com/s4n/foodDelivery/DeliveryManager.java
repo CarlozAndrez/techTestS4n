@@ -7,7 +7,11 @@ public class DeliveryManager {
       String instructionToNextDelivery) {
     for (String route : instructionToNextDelivery.split("")) {
       if (route.equals("A")) {
-        deliveryPoint.direction.applyMovement(deliveryPoint);
+        deliveryPoint.direction.forward(deliveryPoint);
+      } else if (route.equals("I")) {
+        deliveryPoint.direction.left(deliveryPoint);
+      } else if (route.equals("D")) {
+        deliveryPoint.direction.right(deliveryPoint);
       }
     }
     return deliveryPoint;
