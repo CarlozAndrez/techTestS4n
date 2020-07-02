@@ -1,0 +1,14 @@
+# Compiled class file
+*.class
+target/
+
+# Log file
+*.log
+
+# IntelliJ & VSCode & VIM
+.idea/
+.idea
+.vscode
+.factorypath
+*.iml
+*.swp
