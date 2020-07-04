@@ -16,8 +16,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReadFromFlatFileAdapter implements DeliveryReader {
+
+  private static final Logger log = LoggerFactory.getLogger(ReadFromFlatFileAdapter.class);
 
   public List<DroneRoute> readDeliveryInformation(String pathName) {
     File file = new File(pathName);
@@ -35,10 +39,11 @@ public class ReadFromFlatFileAdapter implements DeliveryReader {
           droneRoutes.add(droneRoute);
         }
       }
+      log.info(String.format("%d files were read", droneRoutes.size()));
     } catch (IOException e) {
-      e.printStackTrace();
-      throw new DeliveryManagerException(100L,
-          String.format("Error reading route files from %s ", INPUT_FOLDER));
+      String errorDescription = String.format("Error reading route files from %s ", INPUT_FOLDER);
+      log.error(errorDescription, e);
+      throw new DeliveryManagerException(100L, errorDescription);
     }
     return droneRoutes;
   }

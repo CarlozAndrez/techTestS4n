@@ -18,5 +18,6 @@ public class CommonConstants {
   public static final String OUTPUT_FILE_FORMAT = "out%s.txt";
   public static final String GO_TO_NEXT_LINE = "\n";
   public static final String REPORT_TITLE = "== Reporte de entregas ==";
+  public static final Integer INITIAL_POSITION = 10;
 
 }
