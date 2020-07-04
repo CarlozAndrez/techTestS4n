@@ -14,22 +14,33 @@ import com.s4n.foodDelivery.ports.drivers.IngestDroneRoute;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DeliveryManager implements IngestDroneRoute {
 
+  private static final Logger log = LoggerFactory.getLogger(DeliveryManager.class);
 
   @Override
   public void ingestDroneDeliveryInformation(List<DroneRoute> droneRoutes) throws IOException {
     FlatFileReportAdapter flatFileReportAdapter = new FlatFileReportAdapter();
     for (DroneRoute droneRoute : droneRoutes) {
-      List<DeliveryPoint> deliveryPointsByDrone = new ArrayList<>();
-      DeliveryPoint deliveryPoint = new DeliveryPoint(
-          getInitialDeliveryPoint(droneRoute.getDroneID()));
-      for (String nextDeliveryInstruction : droneRoute.getDeliveryInstructions()) {
-        deliveryPointsByDrone
-            .add(new DeliveryPoint(goToNextDeliveryPoint(deliveryPoint, nextDeliveryInstruction)));
+      try {
+        List<DeliveryPoint> deliveryPointsByDrone = new ArrayList<>();
+        DeliveryPoint deliveryPoint = new DeliveryPoint(
+            getInitialDeliveryPoint(droneRoute.getDroneID()));
+        for (String nextDeliveryInstruction : droneRoute.getDeliveryInstructions()) {
+          deliveryPointsByDrone
+              .add(
+                  new DeliveryPoint(goToNextDeliveryPoint(deliveryPoint, nextDeliveryInstruction)));
+        }
+        flatFileReportAdapter.exportReport(deliveryPointsByDrone);
+      } catch (DeliveryManagerException e) {
+        log.error(String.format(
+            "The route for the drone %s exceeds the maximum allowed units within the delivery map which is %d ",
+            droneRoute.getDroneID(),
+            MAX_UNITS_ALLOWED));
       }
-      flatFileReportAdapter.exportReport(deliveryPointsByDrone);
     }
   }
 
@@ -49,8 +60,9 @@ public class DeliveryManager implements IngestDroneRoute {
   }
 
   private void validateMaxCartesianUnitsAllowed(DeliveryPoint deliveryPoint) {
-    if (deliveryPoint.getX() > 10 || deliveryPoint.getX() < -10 || deliveryPoint.getY() > 10
-        || deliveryPoint.getY() < -10) {
+    if (deliveryPoint.getX() > Integer.valueOf(MAX_UNITS_ALLOWED) || deliveryPoint.getX() < -Integer
+        .valueOf(MAX_UNITS_ALLOWED) || deliveryPoint.getY() > Integer.valueOf(MAX_UNITS_ALLOWED)
+        || deliveryPoint.getY() < -Integer.valueOf(MAX_UNITS_ALLOWED)) {
       throw new DeliveryManagerException(300L,
           String.format("You have exceeded the allowed units within the delivery map which is %d ",
               MAX_UNITS_ALLOWED));
