@@ -5,6 +5,7 @@ import static com.s4n.foodDelivery.application.constants.CommonConstants.OUTPUT_
 import static com.s4n.foodDelivery.application.constants.CommonConstants.OUTPUT_FOLDER;
 import static com.s4n.foodDelivery.application.constants.CommonConstants.REPORT_TITLE;
 
+import com.s4n.foodDelivery.application.exceptions.DeliveryManagerException;
 import com.s4n.foodDelivery.domain.DeliveryPoint;
 import com.s4n.foodDelivery.ports.driven.DeliveryReportPublisher;
 import java.io.File;
@@ -13,8 +14,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FlatFileReportAdapter implements DeliveryReportPublisher {
+
+  private static final Logger log = LoggerFactory.getLogger(FlatFileReportAdapter.class);
 
   @Override
   public void exportReport(List<DeliveryPoint> deliveryPoints) throws IOException {
@@ -25,9 +30,13 @@ public class FlatFileReportAdapter implements DeliveryReportPublisher {
         outputStreamWriter
             .write(deliveryPoint.getDirection().reportFormatter(deliveryPoint) + GO_TO_NEXT_LINE);
       } catch (IOException e) {
-        e.printStackTrace();
+        String errorDescription = String.format("Error trying to create the output files", e);
+        log.error(errorDescription, e);
+        throw new DeliveryManagerException(300L, errorDescription);
       }
     });
+    log.info(String.format("Delivery report for the drone %s was written ",
+        deliveryPoints.get(0).getDroneID()));
     outputStreamWriter.close();
   }
 
